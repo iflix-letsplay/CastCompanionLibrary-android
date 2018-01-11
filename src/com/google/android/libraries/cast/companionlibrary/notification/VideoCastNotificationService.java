@@ -17,6 +17,7 @@
 package com.google.android.libraries.cast.companionlibrary.notification;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -24,8 +25,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
@@ -61,6 +64,7 @@ import static com.google.android.libraries.cast.companionlibrary.utils.LogUtils.
 public class VideoCastNotificationService extends Service {
 
     private static final String TAG = LogUtils.makeLogTag(VideoCastNotificationService.class);
+    private static final String NOTIFICATION_CHANNEL = "channel_ccl";
 
     public static final String ACTION_FORWARD =
             "com.google.android.libraries.cast.companionlibrary.action.forward";
@@ -178,6 +182,21 @@ public class VideoCastNotificationService extends Service {
         }
         mForwardTimeInMillis = TimeUnit.SECONDS
                 .toMillis(mCastManager.getCastConfiguration().getForwardStep());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannels();
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private void createNotificationChannels() {
+        NotificationChannel notificationChannel = new NotificationChannel(
+                NOTIFICATION_CHANNEL,
+                getString(R.string.ccl_notification_title),
+                NotificationManager.IMPORTANCE_LOW
+        );
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(notificationChannel);
     }
 
     @Override
@@ -334,7 +353,7 @@ public class VideoCastNotificationService extends Service {
         String castingTo = getResources().getString(R.string.ccl_casting_to_device,
                 mCastManager.getDeviceName());
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "channel_cast")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL)
                 .setSmallIcon(R.drawable.ic_stat_action_notification)
                 .setContentTitle(metadata.getString(MediaMetadata.KEY_TITLE))
                 .setContentText(castingTo)

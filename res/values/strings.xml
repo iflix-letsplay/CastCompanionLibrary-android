@@ -77,4 +77,7 @@
     <!-- Introductory Overlay -->
     <string name="ccl_intro_overlay_button_text">@android:string/ok</string>
 
+    <!-- Notification channel title -->
+    <string name="ccl_notification_title">Cast</string>
+
 </resources>
